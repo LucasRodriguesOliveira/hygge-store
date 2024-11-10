@@ -3,18 +3,18 @@
 
 #include "metadata.h"
 
-typedef struct arvBin_node ArvBinNode;
+typedef struct binary_tree BTree;
 
-struct arvBin_node {
-    Metadata* metadata;
-    ArvBinNode* esq;
-    ArvBinNode* dir;
+struct binary_tree {
+    void* value;
+    BTree* esq;
+    BTree* dir;
 };
 
-ArvBinNode* inserir(ArvBinNode* raiz, Metadata* metadata);
-ArvBinNode* buscar(ArvBinNode* raiz, const char* filename);
-ArvBinNode* remover(ArvBinNode* raiz, const char* filename);
-void atualizar(ArvBinNode* raiz, Metadata* new_metadata);
-void arvBin_free(ArvBinNode* raiz);
+BTree* inserir(BTree* raiz, void* value, int (*cmp)(void* a, void* b));
+void buscar(BTree* raiz, void* value, int (*cmp)(void* a, void* b));
+BTree* remover(BTree* raiz, void* value, int (*cmp)(void* a, void* b));
+void atualizar(BTree* raiz, void* old_value, void* new_value, int (*cmp)(void* a, void* b));
+void liberar(BTree* raiz);
 
 #endif

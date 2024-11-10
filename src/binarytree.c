@@ -2,79 +2,75 @@
 #include <string.h>
 #include "binarytree.h"
 
-void arvBin_free(ArvBinNode* raiz) {
-    if (raiz != NULL) {
-        arvBin_free(raiz->esq);
-        arvBin_free(raiz->dir);
-        free(raiz->metadata);
-        free(raiz);
-    }
-}
-
-ArvBinNode* inserir(ArvBinNode* raiz, Metadata* metadata) {
+BTree* inserir(BTree* raiz, void* value, int (*cmp)(void* a, void* b)) {
     if (raiz == NULL) {
-        raiz = (ArvBinNode*) malloc(sizeof(ArvBinNode));
-        raiz->metadata = metadata;
+        raiz = (BTree*) malloc(sizeof(BTree));
+        raiz->value = value;
         raiz->esq = raiz->dir = NULL;
-    }else if (strcmp(metadata->filename, raiz->metadata->filename) < 0) {
-        raiz->esq = inserir(raiz->esq, metadata);
-    }else if (strcmp(metadata->filename, raiz->metadata->filename) > 0) {
-        raiz->dir = inserir(raiz->dir, metadata);
+    }else if (cmp(value, raiz->value) < 0) {
+        raiz->esq = inserir(raiz->esq, value, cmp);
+    }else if (cmp(value, raiz->value) > 0) {
+        raiz->dir = inserir(raiz->dir, value, cmp);
     }
     return raiz;
 }
 
-ArvBinNode* buscar(ArvBinNode* raiz, const char* filename) {
-    if (raiz == NULL || strcmp(filename, raiz->metadata->filename) == 0) {
-        return raiz;
+void* buscar(BTree* raiz, void* value, int (*cmp)(void* a, void* b)) {
+    if (raiz == NULL) {
+        return NULL;
     }
-    if (strcmp(filename, raiz->metadata->filename) < 0) {
-        return buscar(raiz->esq, filename);
-    }else {
-        return buscar(raiz->dir, filename);
+    int cmp_result = cmp(value, raiz->value);
+
+    if (cmp_result == 0) {
+        return raiz->value;
+    }else if (cmp_result < 0) {
+        return buscar(raiz->esq, value, cmp);
+    } else {
+        return buscar(raiz-> dir, value, cmp);
     }
 }
 
-ArvBinNode* encontrarMin(ArvBinNode* raiz) {
+BTree* encontrarMin(BTree* raiz) {
     while (raiz->esq != NULL) {
         raiz = raiz->esq;
     }
     return raiz;
 }
 
-ArvBinNode* remover(ArvBinNode* raiz, const char* filename) {
+BTree* remover(BTree* raiz, void* value, int (*cmp)(void* a, void* b)) {
     if (raiz == NULL) {
-        return raiz;
+        return NULL;
     }
-    if (strcmp(filename, raiz->metadata->filename) < 0) {
-        raiz->esq = remover(raiz->esq, filename);
-    } else if (strcmp(filename, raiz->metadata->filename) > 0) {
-        raiz->dir = remover(raiz->dir, filename);
-    }else {
+    int cmp_result = cmp(value, raiz->value);
+    if (cmp_result< 0) {
+        raiz->esq = remover(raiz->esq, value, cmp);
+    } else if (cmp_result > 0) {
+        raiz->dir = remover(raiz->dir, value, cmp);
+    } else {
         if (raiz->esq == NULL) {
-            ArvBinNode* temp = raiz->dir;
+            BTree* temp = raiz->dir;
             free(raiz);
             return temp;
-        }else if (raiz->dir == NULL) {
-            ArvBinNode* temp = raiz->esq;
+        } else if (raiz->dir == NULL) {
+            BTree* temp = raiz->esq;
             free(raiz);
             return temp;
         }
-        ArvBinNode* temp = encontrarMin(raiz->dir);
-        raiz->metadata = temp->metadata;
-        raiz->dir = remover(raiz->dir, temp->metadata->filename);
+        BTree* temp = encontrarMin(raiz->dir);
+        raiz->value = temp->value;
+        raiz->dir = remover(raiz->dir, temp->value, cmp);
     }
     return raiz;
 }
 
-void atualizar(ArvBinNode* raiz, Metadata* new_metadata) {
-    ArvBinNode* node = buscar(raiz, new_metadata->filename);
+void atualizar(BTree* raiz, void* old_value, void* new_value, int (*cmp)(void* a, void* b)) {
+    BTree* node = buscar(raiz, old_value, cmp);
     if (node != NULL) {
-        node->metadata = new_metadata;
+        node->value = new_value;
     }
 }
 
-void liberar(ArvBinNode* raiz) {
+void liberar(BTree* raiz) {
     if (raiz != NULL) {
         liberar(raiz->esq);
         liberar(raiz->dir);

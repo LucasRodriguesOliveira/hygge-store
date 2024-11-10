@@ -9,7 +9,7 @@
 typedef struct config Config;
 
 struct config {
-  ArvBinNode* metaArvBin;
+  BTree* metaArvBin;
   HashMap* metaMap;
   LinkedList* metaList;
   char* filename;

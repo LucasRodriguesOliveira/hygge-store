@@ -14,108 +14,44 @@ int main() {
   while (option != 0) {
 
     printf("Menu:\n");
-    printf("[1]: Novo produto\n");
-    printf("[2]: Novo usuário\n");
-    printf("[3]: Listar produtos\n");
-    printf("[4]: Listar usuários\n");
-    printf("[5]: Buscar\n");
-    printf("[6]: Remover\n");
-    printf("[7]: Atualizar\n");
-    printf("\n");
+    printf("[1]: Buscar profuto por ID\n");
     printf("[0]: Sair\n");
     printf("========================================\n");
 
     printf("-> ");
     scanf(" %d", &option);
+
     int id;
-    char name[100];
     Metadata* metadata;
+    Product* product;
 
     switch (option) {
       case 1:
-        printf("Nome: ");
-        scanf(" %100[^\n]", name);
-
         metadata = config_getMetadata(config, "product");
-        if (metadata == NULL) {
-          printf("Não foi possível consultar as informações: informações não encontradas.\n");
-          return 1;
+        if(metadata == NULL) {
+          printf("Erro: dados não encontrados");
+          break;
         }
-        id = metadata_nextId(metadata);
 
-        Product* p = product_new(id, name);
-        product_save(p, metadata);
-        printf("Produto salvo.\n");
-        free(p);
+        printf("Digite o ID do produto: ");
+        scanf("%d", &id);
+
+        product = product_findById(metadata, id);
+        if (product != NULL) {
+          printf("Produto encontrado:\n");
+          printf("ID: %d, Nome %s\n", product->id, product->name);
+        } else {
+          printf("Produto não encontrado\n");
+        }
         break;
-      case 2:
-        printf("Nome: ");
-        scanf(" %100[^\n]", name);
 
-        metadata = config_getMetadata(config, "user");
-        if (metadata == NULL) {
-          printf("Não foi possível consultar as informações: informações não encontradas.\n");
-          return 1;
-        }
-        id = metadata_nextId(metadata);
-
-        User* u = user_new(id, name);
-        user_save(u, metadata);
-        printf("Usuário salvo.\n");
-        free(u);
+      case 0:
+        printf("Encerrado o programa.\n");
         break;
-      case 3:
-        metadata = config_getMetadata(config, "product");
-        if (metadata == NULL) {
-          printf("Não foi possível consultar as informações: informações não encontradas.\n");
-          return 1;
-        }
-        Product** products = product_load(metadata);
 
-        printf("\n| ID\t| Name |\n");
-        printf("---------------------------------\n");
-        for (int i = 0; i < metadata->count; i++) {
-          Product* p = products[i];
-
-          printf("%d\t| %s\n", p->id, p->name);
-        }
-        product_freeList(products, metadata->count);
-        printf("\n");
-        break;
-      case 4:
-        metadata = config_getMetadata(config, "user");
-        if (metadata == NULL) {
-          printf("Não foi possível consultar as informações: informações não encontradas.\n");
-          return 1;
-        }
-        User** users = user_load(metadata);
-
-        printf("\n| ID\t| Name |\n");
-        printf("---------------------------------\n\n");
-        for (int i = 0; i < metadata->count; i++) {
-          User* u = users[i];
-
-          printf("%d\t| %s\n", u->id, u->name);
-        }
-        printf("\n");
-        user_freeList(users, metadata->count);
-        break;
-      case 5:
-      printf("Digite o tipo (product/user): ");
-      scanf(" %100[^\n]", name);
-
-      metadata = config_getMetadata(config, name);
-      if (metadata != NULL) {
-        printf("Dados encontrados para %s:\n", name);
-        printf("ID: %d\n", metadata->count);
-        printf("Contagem de itens: %d\n", metadata->count);
-      } else {
-        printf("Dados nao encontrados.\n");
-      }
-      break;
-    }
-
-    metadata = NULL;
+        default:
+          printf("Opcao invalida. Tente novamente.\n");
+     }
   }
 
   config_free(config);

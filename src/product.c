@@ -3,6 +3,7 @@
 
 #include "product.h"
 #include "metadata.h"
+#include "binarytree.h"
 
 Product* product_new(int id, char* name) {
   Product* p = (Product*) malloc(sizeof(Product));
@@ -44,6 +45,30 @@ Product** product_load(Metadata* metadata) {
   fclose(file);
 
   return products;
+}
+
+int product_compareById(void* a, void* b) {
+  int id_a = ((Product*)a)->id;
+  int id_b = ((Product*)b)->id;
+  return id_a - id_b;
+}
+
+Product* product_findById(Metadata* metadata, int id) {
+  Product** products = product_load(metadata);
+  BTree* raiz = NULL;
+
+  for (int i = 0; i < metadata->count; i++) {
+    raiz = inserir(raiz, products[i], product_compareById);
+  }
+
+  Product temp;
+  temp.id = id;
+  Product* result = (Product*) buscar(raiz, &temp, product_compareById);
+
+  liberar(raiz);
+  product_freeList(products, metadata->count);
+
+  return result;
 }
 
 void product_freeList(Product** productList, int length) {

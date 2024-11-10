@@ -74,7 +74,7 @@ Config* config_new() {
 void config_free(Config* config) {
   hashmap_free(config->metaMap);
   linkedlist_free(config->metaList);
-  arvBin_free(config->metaArvBin);
+  liberar(config->metaArvBin);
 
   free(config->filename);
   free(config);

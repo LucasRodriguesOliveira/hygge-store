@@ -10,9 +10,10 @@ struct product {
   char name[100];
 };
 
+Product* product_new(int id, char* name);
 void product_save(Product* p, Metadata* metadata);
 Product** product_load(Metadata* metadata);
+Product* product_findById(Metadata* metada, int id);
 void product_freeList(Product** productList, int length);
-Product* product_new(int id, char* name);
 
 #endif
