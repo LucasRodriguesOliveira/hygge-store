@@ -18,6 +18,9 @@ int main() {
     printf("[2]: Novo usuário\n");
     printf("[3]: Listar produtos\n");
     printf("[4]: Listar usuários\n");
+    printf("[5]: Buscar\n");
+    printf("[6]: Remover\n");
+    printf("[7]: Atualizar\n");
     printf("\n");
     printf("[0]: Sair\n");
     printf("========================================\n");
@@ -97,6 +100,19 @@ int main() {
         printf("\n");
         user_freeList(users, metadata->count);
         break;
+      case 5:
+      printf("Digite o tipo (product/user): ");
+      scanf(" %100[^\n]", name);
+
+      metadata = config_getMetadata(config, name);
+      if (metadata != NULL) {
+        printf("Dados encontrados para %s:\n", name);
+        printf("ID: %d\n", metadata->count);
+        printf("Contagem de itens: %d\n", metadata->count);
+      } else {
+        printf("Dados nao encontrados.\n");
+      }
+      break;
     }
 
     metadata = NULL;

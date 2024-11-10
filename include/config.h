@@ -1,6 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "binarytree.h"
 #include "hashmap.h"
 #include "linkedlist.h"
 #include "metadata.h"
@@ -8,6 +9,7 @@
 typedef struct config Config;
 
 struct config {
+  ArvBinNode* metaArvBin;
   HashMap* metaMap;
   LinkedList* metaList;
   char* filename;

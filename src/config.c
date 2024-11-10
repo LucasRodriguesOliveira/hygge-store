@@ -1,8 +1,12 @@
+#include <string.h>
 #include <stdlib.h>
-
 #include "config.h"
+#include "hashmap.h"
+#include "binarytree.h"
+
 
 #define CONFIG_PATH "./system.cfg"
+
 
 Metadata* config_getMetadata(Config* config, const char* filename) {
   HashMap* map = config->metaMap;
@@ -38,12 +42,15 @@ char** config_filenameList(Config* config) {
 void config_addMetadata(Config* config, Metadata* metadata) {
   hashmap_add(config->metaMap, node_new(metadata), metadata_hashId);
   linkedlist_add(config->metaList, node_new(metadata));
+
+  config->metaArvBin = inserir(config->metaArvBin, metadata);
 }
 
 Config* config_new() {
   Config* config = (Config*) malloc(sizeof(Config));
   config->metaMap = hashmap_new();
   config->metaList = linkedlist_new();
+  config->metaArvBin = NULL;
 
   FILE* configFile = fopen(CONFIG_PATH, "rt");
 
@@ -67,6 +74,7 @@ Config* config_new() {
 void config_free(Config* config) {
   hashmap_free(config->metaMap);
   linkedlist_free(config->metaList);
+  arvBin_free(config->metaArvBin);
 
   free(config->filename);
   free(config);
