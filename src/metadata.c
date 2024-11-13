@@ -9,10 +9,6 @@
 #define META_FILE_PREFIX "meta_"
 #define DATA_FOLDER_PATH "./data/"
 
-int metadata_nextId(Metadata* meta) {
-  return meta->count + 1;
-}
-
 int metadata_compare(Node* node, const void* term) {
   Metadata* metadata = (Metadata*) node->value;
 
@@ -85,6 +81,7 @@ FILE* metadata_getFile(Metadata* metadata, FILE_TYPE type, FILE_MODE mode) {
 Metadata* metadata_new(const char* filename) {
   Metadata* metadata = (Metadata*) malloc(sizeof(Metadata));
   metadata->count = 0;
+  metadata->nextId = 1;
   strncpy(metadata->filename, filename, 50);
 
   return metadata;

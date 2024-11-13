@@ -1,8 +1,12 @@
+#include <string.h>
 #include <stdlib.h>
-
 #include "config.h"
+#include "hashmap.h"
+#include "binarytree.h"
+
 
 #define CONFIG_PATH "./system.cfg"
+
 
 Metadata* config_getMetadata(Config* config, const char* filename) {
   HashMap* map = config->metaMap;
