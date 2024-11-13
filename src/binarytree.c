@@ -2,78 +2,141 @@
 #include <string.h>
 #include "binarytree.h"
 
-BTree* inserir(BTree* raiz, void* value, int (*cmp)(void* a, void* b)) {
-    if (raiz == NULL) {
-        raiz = (BTree*) malloc(sizeof(BTree));
-        raiz->value = value;
-        raiz->esq = raiz->dir = NULL;
-    }else if (cmp(value, raiz->value) < 0) {
-        raiz->esq = inserir(raiz->esq, value, cmp);
-    }else if (cmp(value, raiz->value) > 0) {
-        raiz->dir = inserir(raiz->dir, value, cmp);
-    }
-    return raiz;
+BTree* btree_new(void* value) {
+  BTree* tree = (BTree*) malloc(sizeof(BTree));
+  tree->left = NULL;
+  tree->right = NULL;
+  tree->value = value;
+
+  return tree;
 }
 
-void* buscar(BTree* raiz, void* value, int (*cmp)(void* a, void* b)) {
-    if (raiz == NULL) {
-        return NULL;
-    }
-    int cmp_result = cmp(value, raiz->value);
+BTree* btree_add(BTree* root, void* value, int (*cmp)(void* a, void* b)) {
+  if (root == NULL) {
+    return btree_new(value);
+  }
 
-    if (cmp_result == 0) {
-        return raiz->value;
-    }else if (cmp_result < 0) {
-        return buscar(raiz->esq, value, cmp);
+  int cmpResult = cmp(root->value, value);
+
+  if (cmpResult >= 0) {
+    root->left = btree_add(root->left, value, cmp);
+  } else {
+    root->right = btree_add(root->right, value, cmp);
+  }
+
+  return root;
+}
+
+void* btree_find(BTree* root, void* value, int (*cmp)(void* a, void* b)) {
+  if (root == NULL) {
+    return NULL;
+  }
+
+  int cmpResult = cmp(root->value, value);
+
+  if (cmpResult == 0) {
+    return root->value;
+  }
+
+  if (cmpResult > 0) {
+    return btree_find(root->left, value, cmp);
+  }
+
+  return btree_find(root->right, value, cmp);
+}
+
+void btree_print(BTree* root, void (*fn_print)(void* value)) {
+  if (root == NULL) {
+    return;
+  }
+
+  btree_print(root->left, fn_print);
+  fn_print(root->value);
+  btree_print(root->right, fn_print);
+}
+
+BTree* encontrarMin(BTree* root) {
+    while (root->left != NULL) {
+        root = root->left;
+    }
+    return root;
+}
+
+BTree* btree_remove(BTree* root, void* value, int (*cmp)(void* a, void* b)) {
+  if (root == NULL) {
+    return NULL;
+  }
+
+  int cmpResult = cmp(root->value, value);
+
+  if (cmpResult > 0) {
+    root->left = btree_remove(root->left, value, cmp);
+  } else if (cmpResult < 0) {
+    root->right = btree_remove(root->right, value, cmp);
+  } else {
+    if (root->left == NULL && root->right == NULL) {
+      free(root);
+      return NULL;
+    } else if (root->left == NULL) {
+        BTree* temp = root;
+        root = root->right;
+        free(temp);
+    } else if (root->right == NULL) {
+        BTree* temp = root;
+        root = root->left;
+        free(temp);
     } else {
-        return buscar(raiz-> dir, value, cmp);
+      BTree* temp = encontrarMin(root->right);
+      root->value = temp->value;
+      root->right = btree_remove(root->right, temp->value, cmp);
     }
-}
+  }
 
-BTree* encontrarMin(BTree* raiz) {
-    while (raiz->esq != NULL) {
-        raiz = raiz->esq;
-    }
-    return raiz;
-}
-
-BTree* remover(BTree* raiz, void* value, int (*cmp)(void* a, void* b)) {
-    if (raiz == NULL) {
-        return NULL;
-    }
-    int cmp_result = cmp(value, raiz->value);
-    if (cmp_result< 0) {
-        raiz->esq = remover(raiz->esq, value, cmp);
-    } else if (cmp_result > 0) {
-        raiz->dir = remover(raiz->dir, value, cmp);
-    } else {
-        if (raiz->esq == NULL) {
-            BTree* temp = raiz->dir;
-            free(raiz);
-            return temp;
-        } else if (raiz->dir == NULL) {
-            BTree* temp = raiz->esq;
-            free(raiz);
-            return temp;
-        }
-        BTree* temp = encontrarMin(raiz->dir);
-        raiz->value = temp->value;
-        raiz->dir = remover(raiz->dir, temp->value, cmp);
-    }
-    return raiz;
+  return root;
 }
 
 void atualizar(BTree* raiz, void* old_value, void* new_value, int (*cmp)(void* a, void* b)) {
-    BTree* node = buscar(raiz, old_value, cmp);
+    BTree* node = btree_find(raiz, old_value, cmp);
     if (node != NULL) {
         node->value = new_value;
     }
 }
 
-void liberar(BTree* raiz) {
-    if (raiz != NULL) {
-        liberar(raiz->esq);
-        liberar(raiz->dir);
-        free(raiz);
-    }
+void btree_free(BTree* root) {
+  if (root != NULL) {
+    btree_free(root->left);
+    btree_free(root->right);
+    free(root);
+  }
+}
+
+int btree_size(BTree* root) {
+  if (root == NULL) {
+    return 0;
+  }
+
+  return 1 + btree_size(root->left) + btree_size(root->right);
+}
+
+static void fill_array(BTree* root, void** array, int* index) {
+  if (root == NULL) {
+    return;
+  }
+
+  fill_array(root->left, array, index);
+  array[*index] = root->value;
+  (*index)++;
+  fill_array(root->right, array, index);
+}
+
+void** btree_to_array(BTree* root, int* out_size) {
+  int size = btree_size(root);
+  *out_size = size;
+
+  void** array = malloc(size * sizeof(void*));
+
+  int index = 0;
+  fill_array(root, array, &index);
+
+  return array;
 }

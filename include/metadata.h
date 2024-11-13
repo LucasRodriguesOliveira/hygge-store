@@ -10,6 +10,7 @@ typedef enum file_type FILE_TYPE;
 
 struct meta {
   int count;
+  int nextId;
   char filename[50];
 };
 
@@ -33,6 +34,5 @@ char* metadata_getMetaFilename(Metadata* metadata);
 char* metadata_getDataFilename(Metadata* metadata);
 FILE* metadata_getFile(Metadata* metadata, FILE_TYPE type, FILE_MODE mode);
 int metadata_compare(Node* node, const void* term);
-int metadata_nextId(Metadata* metadata);
 
 #endif

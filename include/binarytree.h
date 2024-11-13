@@ -6,15 +6,18 @@
 typedef struct binary_tree BTree;
 
 struct binary_tree {
-    void* value;
-    BTree* esq;
-    BTree* dir;
+  void* value;
+  BTree* left;
+  BTree* right;
 };
 
-BTree* inserir(BTree* raiz, void* value, int (*cmp)(void* a, void* b));
-void buscar(BTree* raiz, void* value, int (*cmp)(void* a, void* b));
-BTree* remover(BTree* raiz, void* value, int (*cmp)(void* a, void* b));
+BTree* btree_add(BTree* root, void* value, int (*cmp)(void* a, void* b));
+void* btree_find(BTree* root, void* value, int (*cmp)(void* a, void* b));
+BTree* btree_remove(BTree* root, void* value, int (*cmp)(void* a, void* b));
 void atualizar(BTree* raiz, void* old_value, void* new_value, int (*cmp)(void* a, void* b));
-void liberar(BTree* raiz);
+void** btree_to_array(BTree* tree, int* out_size);
+void btree_print(BTree* root, void (*fn_print)(void* value));
+int btree_size(BTree* root);
+void btree_free(BTree* root);
 
 #endif
