@@ -16,8 +16,17 @@ int metadata_compare(Node* node, const void* term) {
 }
 
 int metadata_hashId(void* metadata) {
-  return strlen(((Metadata*) metadata)->filename);
+    const char* str = ((Metadata*) metadata)->filename;
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+
+    return hash;
 }
+
 
 char* metadata_getMetaFilename(Metadata* meta) {
   char* metaFilename = (char*) malloc(100 * sizeof(char));
@@ -61,17 +70,23 @@ FILE* metadata_getFile(Metadata* metadata, FILE_TYPE type, FILE_MODE mode) {
       break;
   }
 
+  const char* modeStr;
   switch (mode) {
     case FILE_MODE_WRITE:
-      file = fopen(filename, "wb");
+      modeStr = "wb";
       break;
     case FILE_MODE_APPEND:
-      file = fopen(filename, "ab");
+      modeStr = "ab";
       break;
     case FILE_MODE_READ:
-      file = fopen(filename, "rb");
+      modeStr = "rb";
       break;
+    default:
+      free(filename);
+      return NULL;
   }
+
+  file = fopen(filename, modeStr);
 
   free(filename);
   return file;

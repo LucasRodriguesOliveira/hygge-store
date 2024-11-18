@@ -6,7 +6,7 @@
 #include "metadata.h"
 #include "binarytree.h"
 
-int product_compareById(void* a, void* b) {
+int compareById(void* a, void* b) {
   int id_a = ((Product*)a)->id;
   int id_b = ((Product*)b)->id;
 
@@ -71,7 +71,7 @@ void product_override(Metadata* metadata, Product** productList) {
   fclose(file);
 }
 
-BTree* product_loadAsBTree(Metadata* metadata) {
+BTree* product_asBTree(Metadata* metadata) {
   FILE* file = metadata_getFile(
     metadata,
     FILE_TYPE_DATA,
@@ -84,7 +84,7 @@ BTree* product_loadAsBTree(Metadata* metadata) {
   for (int i = 0; i < length; i++) {
     Product* product = (Product*)malloc(sizeof(Product));
     fread(product, sizeof(Product), 1, file);
-    productTree = btree_add(productTree, product, product_compareById);
+    productTree = btree_add(productTree, product, compareById);
   }
 
   fclose(file);
@@ -95,23 +95,23 @@ Product* productTree_findById(BTree* productTree, int id) {
   return (Product*)btree_find(
     productTree,
     product_new(id, ""),
-    product_compareById
+    compareById
   );
 }
 
-void product_print(void* p) {
-  Product* product = (Product*)p;
+void product_print(void* ptr) {
+  Product* product = (Product*) ptr;
 
-  printf("product_print:106 -> Product [%d]: %s\n", product->id, product->name);
+  printf("Product [%d]: %s\n", product->id, product->name);
 }
 
 Product* product_removeById(Metadata* metadata, BTree* productTree, int id) {
   Product* productToFind = product_new(id, "");
-  Product* removed = (Product*)btree_find(productTree, productToFind, product_compareById);
-  productTree = btree_remove(productTree, productToFind, product_compareById);
+  Product* removed = (Product*)btree_find(productTree, productToFind, compareById);
+  productTree = btree_remove(productTree, productToFind, compareById);
 
   int productListLength;
-  Product** productList = (Product**) btree_to_array(productTree, &productListLength);
+  Product** productList = (Product**)btree_to_array(productTree, &productListLength);
   metadata->count = productListLength;
 
   product_override(metadata, productList);
@@ -136,4 +136,8 @@ void product_freeList(Product** productList, int length) {
   }
 
   free(productList);
+}
+
+Product* product_copy(Product* src) {
+  return product_new(src->id, src->name);
 }
