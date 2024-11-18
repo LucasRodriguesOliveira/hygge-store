@@ -31,9 +31,8 @@ char** config_filenameList(Config* config) {
 
   Node* node = config->metaList->first;
   for (int i = 0; node != NULL; i++) {
-    Node* next = node->next;
     filenameList[i] = ((Metadata*) node->value)->filename;
-    node = next;
+    node = node->next;
   }
 
   return filenameList;
@@ -51,15 +50,16 @@ Config* config_new() {
 
   FILE* configFile = fopen(CONFIG_PATH, "rt");
 
-  if (configFile == NULL) {
-    printf("Arquivo de configuração não encontrado!\n");
-    printf("Adicione um arquivo \"%s\" na raiz do projeto\n", CONFIG_PATH);
-    exit(1);
+  if (feof(configFile)) {
+    printf("Arquivo de configuração não encontrado ou inválido!\n");
+    printf("Adicione um arquivo \"%s\" válido na raiz do projeto\n", CONFIG_PATH);
+    fclose(configFile);
+    exit(EXIT_FAILURE);
   }
 
   char filename[50];
 
-  while(fscanf(configFile, " %50s[^\n]", filename) == 1) {
+  while(fscanf(configFile, " %50[^\n]", filename) == 1) {
     Metadata* metadata = metadata_load(filename);
     config_addMetadata(config, metadata);
   }
@@ -69,8 +69,10 @@ Config* config_new() {
 }
 
 void config_free(Config* config) {
-  hashmap_free(config->metaMap);
-  linkedlist_free(config->metaList);
+  if (!config) return;
+
+  hashmap_free(config->metaMap, 0);
+  linkedlist_free(config->metaList, 1);
 
   free(config->filename);
   free(config);

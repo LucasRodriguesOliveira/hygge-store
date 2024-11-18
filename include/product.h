@@ -16,8 +16,10 @@ void product_save(Product* p, Metadata* metadata);
 Product** product_load(Metadata* metadata);
 Product* productTree_findById(BTree* productTree, int id);
 void product_freeList(Product** productList, int length);
-BTree* product_loadAsBTree(Metadata* metadata);
+BTree* product_asBTree(Metadata* metadata);
 Product* product_removeById(Metadata* metadata, BTree* productTree, int id);
 Product* product_updateById(Metadata* metadata, BTree* productTree, int id, char* name);
+Product* product_copy(Product* src);
+void product_print(void* ptr);
 
 #endif
