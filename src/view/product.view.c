@@ -10,41 +10,37 @@
 
 static void list(Config* config) {
   ProductController* controller = productController_new(config);
+  ProductModel* model = productModel_new();
   Product** products = controller->list(controller);
   int length = controller->count(controller);
 
   printf("Total: %d\n", length);
-  printf("\n| ID\t| Name |\n");
-  printf("---------------------------------\n");
-  for (int i = 0; i < length; i++) {
-    Product* p = products[i];
+  model->printList(products, length);
 
-    printf("%d\t| %s\n", p->id, p->name);
-  }
-
-  product_freeList(products, length);
-  free(controller);
+  model->freeList(products, length);
 }
 
 static void create(Config* config) {
   ProductController* controller = productController_new(config);
+  ProductModel* model = productModel_new();
   char name[100];
 
   printf("Nome: ");
   scanf(" %100[^\n]", name);
 
   Product* product = controller->create(controller, name);
-  printf("[INF]: Produto salvo.\n");
-  printf("| Id\t| Name\n");
-  printf("-------------------------\n");
-  printf("| %d\t| %s\n", product->id, product->name);
+
+  printf("\n[INF]: Produto salvo.\n");
+
+  model->columnsToString();
+  model->toString(product);
 
   free(product);
-  free(controller);
 }
 
 static void find(Config* config) {
   ProductController* controller = productController_new(config);
+  ProductModel* model = productModel_new();
   int id;
 
   printf("Digite o ID do produto: ");
@@ -53,21 +49,21 @@ static void find(Config* config) {
   Product* product = controller->find(controller, id);
 
   if (product == NULL) {
-    printf("[WRN]: Produto não encontrado\n");
+    printf("\n[WRN]: Produto não encontrado\n");
     return;
   }
 
-  printf("[INF]: Produto encontrado:\n");
-  printf("| Id\t| Name\n");
-  printf("-------------------------\n");
-  printf("| %d\t| %s\n", product->id, product->name);
+  printf("\n[INF]: Produto encontrado.\n");
+
+  model->columnsToString();
+  model->toString(product);
 
   free(product);
-  free(controller);
 }
 
 static void delete(Config* config) {
   ProductController* controller = productController_new(config);
+  ProductModel* model = productModel_new();
   int id;
 
   printf("Digite o ID do produto: ");
@@ -76,45 +72,54 @@ static void delete(Config* config) {
   Product* product = controller->destroy(controller, id);
 
   if (product == NULL) {
-    printf("[WRN]: Produto não encontrado.\n");
+    printf("\n[WRN]: Produto não encontrado.\n");
     return;
   }
 
-  printf("[INF]: Produto removido.\n");
-  printf("| Id\t| Name\n");
-  printf("-------------------------\n");
-  printf("| %d\t| %s\n", product->id, product->name);
+  printf("\n[INF]: Produto removido.\n");
+
+  model->columnsToString();
+  model->toString(product);
 
   free(product);
-  free(controller);
 }
 
 static void update(Config* config) {
   ProductController* controller = productController_new(config);
+  ProductModel* model = productModel_new();
   int id;
 
   printf("Digite o ID do produto: ");
   scanf("%d", &id);
 
   Product* product = controller->find(controller, id);
-  printf("| Id\t| Name\n");
-  printf("-------------------------\n");
-  printf("| %d\t| %s\n", product->id, product->name);
 
-  printf("Novo nome: ");
+  if (product == NULL) {
+    printf("\n[WRN]: produto não encontrado.\n");
+    return;
+  }
+
+  model->columnsToString();
+  model->toString(product);
+
+  printf("\nNovo nome: ");
   char name[100];
   scanf(" %100[^\n]", name);
   snprintf(product->name, 100, "%s", name);
 
   product = controller->update(controller, product);
 
-  printf("[INF]: Produto atualizado.\n");
-  printf("| Id\t| Name\n");
-  printf("-------------------------\n");
-  printf("| %d\t| %s\n", product->id, product->name);
+  if (product == NULL) {
+    fprintf(stderr, "\n\[ERR]: Não foi possível atualizar o produto.\n");
+    return;
+  }
+
+  printf("\n[INF]: Produto atualizado.\n");
+
+  model->columnsToString();
+  model->toString(product);
 
   free(product);
-  free(controller);
 }
 
 View* productView_new(Config* config) {
