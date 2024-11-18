@@ -3,12 +3,14 @@
 
 #include "config.h"
 #include "metadata.h"
+#include "product.repository.h"
 #include "product.h"
 
 typedef struct product_controller ProductController;
 
 struct product_controller {
   Metadata* metadata;
+  ProductRepository* repository;
 
   int (*count)(ProductController* self);
   Product** (*list)(ProductController* self);
