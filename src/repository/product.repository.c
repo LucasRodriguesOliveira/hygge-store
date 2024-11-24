@@ -128,7 +128,7 @@ static Product* destroy(int id) {
   );
 
   if (removed == NULL) {
-    avl_find(productTree);
+    avl_free(productTree);
     free(productToFind);
     return NULL;
   }
