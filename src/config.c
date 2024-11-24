@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "config.h"
 #include "hashmap.h"
-#include "binarytree.h"
+#include "avltree.h"
 
 
 #define CONFIG_PATH "./system.cfg"

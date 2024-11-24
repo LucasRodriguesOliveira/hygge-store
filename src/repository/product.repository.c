@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "binarytree.h"
+#include "avltree.h"
 #include "metadata.h"
 #include "product.repository.h"
 #include "product.model.h"
@@ -67,7 +67,7 @@ static Product** findAll() {
   return products;
 }
 
-static BTree* listAsBTree() {
+static AVLTree* listAsAVLTree() {
   Metadata* metadata = instance->metadata;
   ProductModel* model = instance->model;
   FILE* file = metadata_getFile(
@@ -77,14 +77,14 @@ static BTree* listAsBTree() {
   );
 
   int length = metadata->count;
-  BTree* productTree = NULL;
+  AVLTree* productTree = NULL;
 
   for (int i = 0; i < length; i++) {
     Product* product = (Product*)malloc(sizeof(Product));
 
     fread(product, sizeof(Product), 1, file);
 
-    productTree = btree_add(
+    productTree = avl_add(
       productTree,
       product,
       model->compare
@@ -97,9 +97,9 @@ static BTree* listAsBTree() {
 
 static Product* findById(int id) {
   ProductModel* model = instance->model;
-  BTree* productTree = listAsBTree();
+  AVLTree* productTree = listAsAVLTree();
 
-  Product* found = (Product*)btree_find(
+  Product* found = (Product*)avl_find(
     productTree,
     model->create(id, ""),
     model->compare
@@ -111,29 +111,29 @@ static Product* findById(int id) {
     product = model->copy(found);
   }
 
-  btree_free(productTree);
+  avl_free(productTree);
   return product;
 }
 
 static Product* destroy(int id) {
   ProductModel* model = instance->model;
   Metadata* metadata = instance->metadata;
-  BTree* productTree = listAsBTree();
+  AVLTree* productTree = listAsAVLTree();
   Product* productToFind = model->create(id, "");
 
-  Product* removed = (Product*)btree_find(
+  Product* removed = (Product*)avl_find(
     productTree,
     productToFind,
     model->compare
   );
 
   if (removed == NULL) {
-    btree_free(productTree);
+    avl_find(productTree);
     free(productToFind);
     return NULL;
   }
 
-  productTree = btree_remove(
+  productTree = avl_remove(
     productTree,
     productToFind,
     model->compare
@@ -142,7 +142,7 @@ static Product* destroy(int id) {
   free(productToFind);
 
   int productListLength;
-  Product** productList = (Product**)btree_to_array(
+  Product** productList = (Product**)avl_to_array(
     productTree,
     &productListLength
   );
@@ -153,7 +153,7 @@ static Product* destroy(int id) {
   metadata_save(metadata);
 
   Product* product = model->copy(removed);
-  btree_free(productTree);
+  avl_free(productTree);
   free(removed);
 
   return product;
