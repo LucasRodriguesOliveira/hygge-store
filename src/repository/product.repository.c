@@ -141,11 +141,11 @@ static Product* destroy(int id) {
 
   free(productToFind);
 
-  int productListLength;
-  Product** productList = (Product**)avl_to_array(
-    productTree,
-    &productListLength
-  );
+  int productListLength = metadata->count;
+  Product** productList = (Product**)malloc(productListLength * sizeof(Product*));
+  int index = 0;
+
+  avl_to_array(productTree, (void**)productList, &index);
 
   metadata->count = productListLength;
 

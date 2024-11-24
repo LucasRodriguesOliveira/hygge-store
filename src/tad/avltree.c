@@ -165,3 +165,23 @@ int avl_update(AVLTree* root, void* old_value, void* new_value, int (*cmp)(void*
     }
     return 0;
 }
+
+void avl_free(AVLTree* root) {
+    if (root == NULL) {
+        return;
+    }
+    avl_free(root->left);
+    avl_free(root->right);
+    free(root->value);
+    free(root);
+}
+
+void avl_to_array(AVLTree* root, void** array, int* index) {
+    if (root == NULL) {
+        return;
+    }
+    avl_to_array(root->left, array, index);
+    array[*index] = root->value;
+    (*index)++;
+    avl_to_array(root->right, array, index);
+}
