@@ -65,30 +65,34 @@ AVLTree* avl_add(AVLTree* node, void* value, int (*cmp)(void* a, void* b)) {
     int cmp_result = cmp(value, node->value);
     if (cmp_result < 0) {
         node->left = avl_add(node->left, value, cmp);
-    } else if (cmp_result > 0) {
+    }
+    else if (cmp_result > 0) {
         node->right = avl_add(node->right, value, cmp);
-    } else {
-        return node;
     }
 
     node->height = 1 + max(height(node->left), height(node->right));
 
     int balance = get_balance(node);
 
-    if (balance > 1 && cmp(value, node->left->value) < 0) {
+    // Balancing the tree
+    // Left Left
+    if (balance > 1 && get_balance(node->left) >= 0) {
         return rotate_right(node);
     }
 
-    if (balance > -1 && cmp(value, node->right->value) > 0) {
-        return rotate_left(node);
-    }
-
-    if (balance > 1 && cmp(value, node->left->value) > 0) {
+    // Left Right
+    if (balance > 1 && get_balance(node->left) < 0) {
         node->left = rotate_left(node->left);
         return rotate_right(node);
     }
 
-    if (balance < -1 && cmp(value, node->right->value) < 0 ) {
+    // Right Right
+    if (balance < -1 && get_balance(node->right) <= 0) {
+        return rotate_left(node);
+    }
+
+    // Right Left
+    if (balance < -1 && get_balance > 0) {
         node->right = rotate_right(node->right);
         return rotate_left(node);
     }
@@ -99,55 +103,79 @@ AVLTree* avl_add(AVLTree* node, void* value, int (*cmp)(void* a, void* b)) {
 void* avl_find(AVLTree* root, void* value, int (*cmp)(void* a, void* b)) {
     if (root == NULL) {
         return NULL;
-    }  
+    }
 
     int cmp_result = cmp(value, root->value);
-    if (cmp_result == 0) { 
+    if (cmp_result == 0) {
         return root->value;
-    } else if (cmp_result < 0) {
+    }
+    else if (cmp_result < 0) {
         return avl_find(root->left, value, cmp);
-    } else {
+    }
+    else {
         return avl_find(root->right, value, cmp);
     }
 }
 
+static AVLTree* min_value(AVLTree* node) {
+  AVLTree* current = node;
+
+  while (current != NULL) {
+    current = current->left;
+  }
+
+  return current;
+}
+
 AVLTree* avl_remove(AVLTree* root, void* value, int (*cmp)(void* a, void* b)) {
     if (root == NULL) {
-        return NULL;
+        return root;
     }
 
     int cmp_result = cmp(value, root->value);
 
     if (cmp_result < 0) {
         root->left = avl_remove(root->left, value, cmp);
-    } else if (cmp_result > 0) {
+    }
+    else if (cmp_result > 0) {
         root->right = avl_remove(root->right, value, cmp);
-    } else {
-        if (root->left == NULL || root->right == NULL) {
-            AVLTree* temp = root->left ? root->left : root->right;
+    }
+    else {
+        if (root->left == NULL) {
+            AVLTree* temp = root->right;
             free(root);
             return temp;
-        } else {
-            AVLTree* temp = root->right;
-            while (temp->left != NULL) temp = temp->left;
-            root->value = temp->value;
-            root->right = avl_remove(root->right, temp->value, cmp);
         }
+        else if (root->right == NULL) {
+            AVLTree* temp = root->left;
+            free(root);
+            return temp;
+        }
+
+        AVLTree* temp = min_value(root->right);
+        root->value = temp->value;
+        root->right = avl_remove(root->right, temp->value, cmp);
+    }
+
+    if (root == NULL) {
+      return NULL;
     }
 
     root->height = 1 + max(height(root->left), height(root->right));
     int balance = get_balance(root);
 
-    if (balance > 1 && get_balance(root->left) >= 0)
+    if (balance > 1 && get_balance(root->left) >= 0) {
         return rotate_right(root);
+    }
 
     if (balance > 1 && get_balance(root->left) < 0) {
         root->left = rotate_left(root->left);
         return rotate_right(root);
     }
 
-    if (balance < -1 && get_balance(root->right) <= 0)
+    if (balance < -1 && get_balance(root->right) <= 0) {
         return rotate_left(root);
+    }
 
     if (balance < -1 && get_balance(root->right) > 0) {
         root->right = rotate_right(root->right);
@@ -176,12 +204,43 @@ void avl_free(AVLTree* root) {
     free(root);
 }
 
-void avl_to_array(AVLTree* root, void** array, int* index) {
+int avl_size(AVLTree* root) {
+    if (root == NULL) {
+        return 0;
+    }
+
+    return 1 + avl_size(root->left) + avl_size(root->right);
+}
+
+static void fill_array(AVLTree* root, void** array, int* index) {
     if (root == NULL) {
         return;
     }
-    avl_to_array(root->left, array, index);
+
+    fill_array(root->left, array, index);
     array[*index] = root->value;
     (*index)++;
-    avl_to_array(root->right, array, index);
+    fill_array(root->right, array, index);
+}
+
+void** avl_to_array(AVLTree* root, int* out_size) {
+    int size = avl_size(root);
+    *out_size = size;
+
+    void** array = malloc(size * sizeof(void*));
+
+    int index = 0;
+    fill_array(root, array, &index);
+
+    return array;
+}
+
+void avl_print(AVLTree* root, void (*printfn)(void* value)) {
+    if (root == NULL) {
+        return;
+    }
+
+    avl_print(root->left, printfn);
+    printfn(root->value);
+    avl_print(root->right, printfn);
 }

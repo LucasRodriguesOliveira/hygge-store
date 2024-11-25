@@ -141,11 +141,13 @@ static Product* destroy(int id) {
 
   free(productToFind);
 
-  int productListLength = metadata->count;
-  Product** productList = (Product**)malloc(productListLength * sizeof(Product*));
-  int index = 0;
+  int productListLength;
+  Product** productList = (Product**) avl_to_array(
+    productTree,
+    &productListLength
+  );
 
-  avl_to_array(productTree, (void**)productList, &index);
+  instance->model->printList(productList, productListLength);
 
   metadata->count = productListLength;
 
