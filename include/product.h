@@ -2,7 +2,7 @@
 #define PRODUCT_H
 
 #include "metadata.h"
-#include "binarytree.h"
+#include "avltree.h"
 
 #define PRODUCT_NAME_LENGTH 100
 
