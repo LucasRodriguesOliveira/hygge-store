@@ -2,29 +2,37 @@
 #include <stdio.h>
 
 #include "product.h"
+#include "category.h"
 #include "product.model.h"
 
 static ProductModel* instance = NULL;
 
-static Product* create(int id, char* name) {
+static Product* create(
+  int id,
+  char* name,
+  double price,
+  int quantity,
+  int categoryId
+) {
   Product* product = (Product*)malloc(sizeof(Product));
   product->id = id;
+  product->price = price;
+  product->quantity = quantity;
+  product->categoryId = categoryId;
   snprintf(product->name, PRODUCT_NAME_LENGTH, "%s", name);
 
   return product;
 }
 
-static Product* new(char* name){
-  return create(0, name);
+static Product* new(char* name, double price, int quantity, int categoryId){
+  return create(0, name, price, quantity, categoryId);
 }
 
-static void toString(Product* product) {
-  printf("| %d\t| %s\n", product->id, product->name);
-}
-
-static void columnsToString() {
-  printf("\n| Id\t| Nome");
-  printf("\n-------------------------\n");
+static void toString(Product* product, Category* category) {
+  printf("[%d]: %s\n", product->id, product->name);
+  printf("Categoria [%d]: %s\n", category->id, category->description);
+  printf("Preço: R$ %8.2lf\n", product->price);
+  printf("Quantidade: %d\n", product->quantity);
 }
 
 static void freeList(Product** list, int length) {
@@ -43,14 +51,26 @@ static int compare(void* a, void* b) {
 }
 
 static Product* copy(Product* src) {
-  return create(src->id, src->name);
+  return create(
+    src->id,
+    src->name,
+    src->price,
+    src->quantity,
+    src->categoryId
+  );
 }
 
-static void printList(Product** list, int length) {
-  columnsToString();
-
+static void printList(
+  Product** list,
+  int length,
+  Category* (*findCategory)(int id)
+) {
   for (int i = 0; i < length; i++) {
-    toString(list[i]);
+    Product* product = list[i];
+    Category* category = findCategory(product->categoryId);
+
+    toString(product, category);
+    free(category);
   }
 }
 
@@ -67,7 +87,6 @@ ProductModel* productModel_new() {
   instance->compare = compare;
   instance->freeList = freeList;
   instance->toString = toString;
-  instance->columnsToString = columnsToString;
   instance->printList = printList;
 
   return instance;

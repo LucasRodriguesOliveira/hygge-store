@@ -14,7 +14,13 @@ struct product_controller {
 
   int (*count)(ProductController* self);
   Product** (*list)(ProductController* self);
-  Product* (*create)(ProductController* self, char* name);
+  Product* (*create)(
+    ProductController* self,
+    char* name,
+    double price,
+    int quantity,
+    int categoryId
+  );
   Product* (*find)(ProductController* self, int id);
   Product* (*update)(ProductController* self, Product* product);
   Product* (*destroy)(ProductController* self, int id);

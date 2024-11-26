@@ -1,12 +1,20 @@
 #include <stdlib.h>
 
 #include "avltree.h"
+#include "node.h"
+#include "linkedlist.h"
 #include "metadata.h"
+#include "category.repository.h"
 #include "product.repository.h"
 #include "product.model.h"
 #include "product.h"
 
 static ProductRepository* instance = NULL;
+static CategoryRepository* categoryRepository = NULL;
+
+static int count(void) {
+  return instance->metadata->count;
+}
 
 static void saveData(Product* product) {
   Metadata* metadata = instance->metadata;
@@ -67,6 +75,27 @@ static Product** findAll() {
   return products;
 }
 
+static LinkedList* findByCategory(int categoryId) {
+  int length = count();
+
+  if (length == 0) {
+    return NULL;
+  }
+
+  Product** products = findAll();
+  LinkedList* productList = linkedlist_new();
+
+  for (int i = 0; i < length; i++) {
+    Product* product = products[i];
+
+    if (product->categoryId == categoryId) {
+      linkedlist_add(productList, node_new(product));
+    }
+  }
+
+  return productList;
+}
+
 static AVLTree* listAsAVLTree() {
   Metadata* metadata = instance->metadata;
   ProductModel* model = instance->model;
@@ -101,7 +130,7 @@ static Product* findById(int id) {
 
   Product* found = (Product*)avl_find(
     productTree,
-    model->create(id, ""),
+    model->create(id, "", 0, 0, 0),
     model->compare
   );
 
@@ -119,7 +148,7 @@ static Product* destroy(int id) {
   ProductModel* model = instance->model;
   Metadata* metadata = instance->metadata;
   AVLTree* productTree = listAsAVLTree();
-  Product* productToFind = model->create(id, "");
+  Product* productToFind = model->create(id, "", 0, 0, 0);
 
   Product* removed = (Product*)avl_find(
     productTree,
@@ -147,7 +176,11 @@ static Product* destroy(int id) {
     &productListLength
   );
 
-  instance->model->printList(productList, productListLength);
+  instance->model->printList(
+    productList,
+    productListLength,
+    categoryRepository->findById
+  );
 
   metadata->count = productListLength;
 
@@ -159,10 +192,6 @@ static Product* destroy(int id) {
   free(removed);
 
   return product;
-}
-
-static int count(void) {
-  return instance->metadata->count;
 }
 
 static Product* update(Product* product) {
@@ -181,20 +210,26 @@ static Product* update(Product* product) {
   return product;
 }
 
-ProductRepository* productRepository_new(Metadata* metadata) {
+ProductRepository* productRepository_new(
+  Metadata* productEntity,
+  Metadata* categoryEntity
+) {
   if (instance != NULL) {
     return instance;
   }
 
   instance = (ProductRepository*) malloc(sizeof(ProductRepository));
   instance->model = productModel_new();
-  instance->metadata = metadata;
+  instance->metadata = productEntity;
   instance->save = save;
   instance->findAll = findAll;
+  instance->findByCategory = findByCategory;
   instance->findById = findById;
   instance->remove = destroy;
   instance->update = update;
   instance->count = count;
+
+  categoryRepository = categoryRepository_new(categoryEntity);
 
   return instance;
 }

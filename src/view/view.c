@@ -88,3 +88,8 @@ MenuOption* viewoption_new(char* title, RunViewFn runFn) {
 
   return option;
 }
+
+void view_free(View* view) {
+  linkedlist_free(view->options, 0);
+  free(view);
+}
