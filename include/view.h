@@ -41,5 +41,6 @@ struct view {
 
 View* view_new(Config* config, char* name, char* exit);
 MenuOption* viewoption_new(char* title, RunViewFn runFn);
+void view_free(View* view);
 
 #endif

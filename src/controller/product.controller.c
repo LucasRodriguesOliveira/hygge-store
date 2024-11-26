@@ -2,17 +2,23 @@
 #include <stdio.h>
 
 #include "config.h"
-//#include "avltree.h"
 #include "product.model.h"
 #include "product.controller.h"
 
 #define ENTITY "product"
+#define CATEGORY_ENTITY "category"
 
 static ProductController* instance = NULL;
 
-static Product* create(ProductController* self, char* name) {
+static Product* create(
+  ProductController* self,
+  char* name,
+  double price,
+  int quantity,
+  int categoryId
+) {
   ProductModel* model = productModel_new();
-  return self->repository->save(model->new(name));
+  return self->repository->save(model->new(name, price, quantity, categoryId));
 }
 
 static Product** list(ProductController* self) {
@@ -43,13 +49,15 @@ ProductController* productController_new(Config* config) {
   ProductController* controller =
     (ProductController*)malloc(sizeof(ProductController));
 
-  Metadata* metadata = config_getMetadata(config, ENTITY);
-  if (metadata == NULL) {
+  Metadata* productEntity = config_getMetadata(config, ENTITY);
+  Metadata* categoryEntity = config_getMetadata(config, CATEGORY_ENTITY);
+
+  if (productEntity == NULL || categoryEntity == NULL) {
     fprintf(stderr, "\n[Erro]: Não foi possível encontrar os dados.\n");
     exit(EXIT_FAILURE);
   }
 
-  controller->repository = productRepository_new(metadata);
+  controller->repository = productRepository_new(productEntity, categoryEntity);
   controller->create = create;
   controller->list = list;
   controller->find = find;
