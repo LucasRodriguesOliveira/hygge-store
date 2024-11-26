@@ -2,6 +2,7 @@
 #define PRODUCT_REPOSITORY_H
 
 #include "metadata.h"
+#include "linkedlist.h"
 #include "product.h"
 #include "product.model.h"
 
@@ -13,12 +14,16 @@ struct product_repository {
 
   Product* (*save)(Product* product);
   Product** (*findAll)(void);
+  LinkedList* (*findByCategory)(int categoryId);
   Product* (*findById)(int id);
   Product* (*update)(Product* product);
   Product* (*remove)(int id);
   int (*count)(void);
 };
 
-ProductRepository* productRepository_new(Metadata* metadata);
+ProductRepository* productRepository_new(
+  Metadata* productEntity,
+  Metadata* categoryEntity
+);
 
 #endif
