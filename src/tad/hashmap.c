@@ -14,10 +14,10 @@ int hashmap_genHash(int id, int max_sz) {
 }
 
 HashMap* hashmap_new() {
-  HashMap* map = (HashMap*) malloc(sizeof(HashMap));
+  HashMap* map = (HashMap*)malloc(sizeof(HashMap));
   map->length = 0;
   map->capacity = HASHMAP_INITIAL_CAPACITY;
-  map->nodeList = (Node**) malloc(map->capacity * sizeof(Node*));
+  map->nodeList = (Node**)malloc(map->capacity * sizeof(Node*));
 
   for (int i = 0; i < map->capacity; i++) {
     map->nodeList[i] = NULL;
@@ -26,17 +26,25 @@ HashMap* hashmap_new() {
   return map;
 }
 
-void hashmap_free(HashMap* map) {
+void hashmap_free(HashMap* map, int freeNodeValue) {
   for (int i = 0; i < map->capacity; i++) {
     Node* current = map->nodeList[i];
 
-    while(current != NULL) {
+    while (current != NULL) {
       Node* next = current->next;
-      node_free(current);
+
+      if (freeNodeValue) {
+        node_free(current);
+      }
+      else {
+        free(current);
+      }
+
       current = next;
     }
   }
 
+  free(map->nodeList);
   free(map);
 }
 Node* hashmap_find(
@@ -62,8 +70,8 @@ void hashmap_resize(HashMap* map, int (*hashId)(void*)) {
   int prevMax = map->capacity;
   Node** prev = map->nodeList;
   map->length = 0;
-  map->capacity *= (int) HASHMAP_INCREASE_MULTIPLIER;
-  map->nodeList = (Node**) malloc(map->capacity * sizeof(Node*));
+  map->capacity *= (int)HASHMAP_INCREASE_MULTIPLIER;
+  map->nodeList = (Node**)malloc(map->capacity * sizeof(Node*));
 
   for (int i = 0; i < map->capacity; i++) {
     map->nodeList[i] = NULL;

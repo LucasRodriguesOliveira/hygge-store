@@ -1,3 +1,6 @@
 /data
 /build
 .vscode/
+/backup
+meta_*
+*.dat

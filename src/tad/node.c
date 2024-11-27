@@ -5,6 +5,7 @@
 Node* node_new(void* value) {
   Node* node = (Node*) malloc(sizeof(Node));
   node->next = NULL;
+  node->previous = NULL;
   node->value = value;
 
   return node;

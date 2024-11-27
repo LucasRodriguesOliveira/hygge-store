@@ -6,7 +6,8 @@ typedef struct nodeservice NodeService;
 
 struct node {
   void* value;
-  struct node* next;
+  Node* next;
+  Node* previous;
 };
 
 struct nodeservice {

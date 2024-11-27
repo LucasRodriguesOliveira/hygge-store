@@ -9,10 +9,6 @@
 #define META_FILE_PREFIX "meta_"
 #define DATA_FOLDER_PATH "./data/"
 
-int metadata_nextId(Metadata* meta) {
-  return meta->count + 1;
-}
-
 int metadata_compare(Node* node, const void* term) {
   Metadata* metadata = (Metadata*) node->value;
 
@@ -20,8 +16,17 @@ int metadata_compare(Node* node, const void* term) {
 }
 
 int metadata_hashId(void* metadata) {
-  return strlen(((Metadata*) metadata)->filename);
+    const char* str = ((Metadata*) metadata)->filename;
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+
+    return hash;
 }
+
 
 char* metadata_getMetaFilename(Metadata* meta) {
   char* metaFilename = (char*) malloc(100 * sizeof(char));
@@ -65,17 +70,23 @@ FILE* metadata_getFile(Metadata* metadata, FILE_TYPE type, FILE_MODE mode) {
       break;
   }
 
+  const char* modeStr;
   switch (mode) {
     case FILE_MODE_WRITE:
-      file = fopen(filename, "wb");
+      modeStr = "wb";
       break;
     case FILE_MODE_APPEND:
-      file = fopen(filename, "ab");
+      modeStr = "ab";
       break;
     case FILE_MODE_READ:
-      file = fopen(filename, "rb");
+      modeStr = "rb";
       break;
+    default:
+      free(filename);
+      return NULL;
   }
+
+  file = fopen(filename, modeStr);
 
   free(filename);
   return file;
@@ -85,6 +96,7 @@ FILE* metadata_getFile(Metadata* metadata, FILE_TYPE type, FILE_MODE mode) {
 Metadata* metadata_new(const char* filename) {
   Metadata* metadata = (Metadata*) malloc(sizeof(Metadata));
   metadata->count = 0;
+  metadata->nextId = 1;
   strncpy(metadata->filename, filename, 50);
 
   return metadata;
