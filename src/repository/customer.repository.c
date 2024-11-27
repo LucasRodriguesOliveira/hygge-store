@@ -147,8 +147,6 @@ static Customer* destroy(int id) {
     &customerListLength
   );
 
-  instance->model->printList(customerList, customerListLength);
-
   metadata->count = customerListLength;
 
   override(customerList);

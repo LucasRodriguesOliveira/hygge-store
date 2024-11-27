@@ -3,6 +3,7 @@
 #include "category.view.h"
 #include "customer.view.h"
 #include "product.view.h"
+#include "sale.view.h"
 
 void productMenu(Config* config) {
   View* productView = productView_new(config);
@@ -28,11 +29,27 @@ void customerMenu(Config* config) {
   view_free(customerView);
 }
 
+void saleMenu(Config* config) {
+  View* saleView = saleView_new(config);
+
+  saleView->show(saleView);
+
+  view_free(saleView);
+}
+
 View* mainView_new(Config* config) {
   View* productView = view_new(
     config,
     "Principal",
     "Finalizar aplicação"
+  );
+
+  productView->addOption(
+    productView,
+    viewoption_new(
+      "Vendas",
+      saleMenu
+    )
   );
 
   productView->addOption(
