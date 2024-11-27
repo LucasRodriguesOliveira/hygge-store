@@ -147,8 +147,6 @@ static Category* destroy(int id) {
     &categoryListLength
   );
 
-  instance->model->printList(categoryList, categoryListLength);
-
   metadata->count = categoryListLength;
 
   override(categoryList);

@@ -176,12 +176,6 @@ static Product* destroy(int id) {
     &productListLength
   );
 
-  instance->model->printList(
-    productList,
-    productListLength,
-    categoryRepository->findById
-  );
-
   metadata->count = productListLength;
 
   override(productList);
